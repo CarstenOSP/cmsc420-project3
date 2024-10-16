@@ -47,17 +47,56 @@ class SplayForest():
                     dict_repr[t] = _to_dict(self.roots[t])
         print(json.dumps(dict_repr,indent = 2))
 
+    def zig(self, node: Node):
+        parent = node.parent
+        if node == None:
+            print("Oopsy! This shouldn't happen")
+        if node == parent.left:
+            parent.leftchild = node.rightchild
+        else:
+            parent.rightchild = node.leftchild
+        node.parent = parent.parent
+        parent.parent = node
+
     # Search:
     # Search for the key or the last node before we fall out of the tree.
     # Splay that node.
     def search(self,treename: str,key:int):
-        print('This is a place-holder')
+        node = self.roots[treename]
+        parent = None
+        while node != key and node != None:
+            parent = node
+            if key > node:
+                node = node.leftchild
+            else:
+                node = node.rightchild
+        if node == None:
+            node = parent
+        while node.parent != None and node.parent.parent != None: # while Node is not at root or child
+            if (node == node.parent.left and node.parent == node.parent.parent.left) or \
+               (node == node.parent.right and node.parent == node.parent.parent.right):
+                self.zig(node.parent)
+                self.zig(node)
+            else:
+                self.zig(node)
+                self.zig(node)
+        if node.parent != None:
+            self.zig(node)
+        self.roots[treename] = node
 
     # Insert Type 1:
     # The key is guaranteed to not be in the tree.
     # Call splay(x) and respond according to whether we get the IOP or IOS.
     def insert(self,treename:str,key:int):
-        print('This is a place-holder')
+        self.search(treename, key)
+        node = self.roots[treename]
+        if node < key:
+            node.parent = Node(key, node, node.rightchild, None)
+            node.rightchild = None
+        else:
+            node.parent = Node(key, node.leftchild, node, None)
+            node.leftchild = None
+        self.roots[treename] = node.parent
 
     # Delete Type 1:
     # The key is guarenteed to be in the tree.
