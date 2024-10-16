@@ -75,7 +75,7 @@ class SplayForest():
     # Search:
     # Search for the key or the last node before we fall out of the tree.
     # Splay that node.
-    def splay(self, treename: str, node: Node, key: int):
+    def splay(self, treename: str, node: Node, key: int, stop: Node):
         if node != None:
             parent = None
             while node != None and node.key != key:
@@ -87,7 +87,7 @@ class SplayForest():
             if node == None:
                 node = parent
             # print(node.key)
-            while node.parent != None and node.parent.parent != None: # while Node is not at root or child
+            while node.parent != stop and node.parent.parent != stop: # while Node is not at root or child
                 if (node == node.parent.leftchild and node.parent == node.parent.parent.leftchild) or \
                     (node == node.parent.rightchild and node.parent == node.parent.parent.rightchild):
                     # print("Zig zig")
@@ -97,13 +97,13 @@ class SplayForest():
                     # print("Zig zag")
                     self.zig(treename, node)
                     self.zig(treename, node)
-            if node.parent != None:
+            if node.parent != stop:
                 # print("Zig")
                 self.zig(treename, node)
 
     def search(self,treename: str,key:int):
         node = self.roots[treename]
-        self.splay(treename, node, key)
+        self.splay(treename, node, key, None)
 
     # Insert Type 1:
     # The key is guaranteed to not be in the tree.
@@ -136,7 +136,14 @@ class SplayForest():
         self.search(treename, key)
         node = self.roots[treename]
         if node.leftchild and node.rightchild:
-            self.splay(treename, node.rightchild, key)
+            # print(key)
+            # self.dump()
+            self.splay(treename, node.rightchild, key, node)
+            # self.dump()
+            node.leftchild.parent = node.rightchild
+            node.rightchild.leftchild = node.leftchild
+            node.rightchild.parent = None
+            self.roots[treename] = node.rightchild
         else:
             if not node.leftchild and not node.rightchild:
                 self.roots[treename] = None
