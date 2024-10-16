@@ -151,5 +151,5 @@ class SplayForest():
                 self.roots[treename] = node.leftchild
                 node.leftchild.parent = None
             else:
-                self.roots[treename] = node.leftchild
+                self.roots[treename] = node.rightchild
                 node.rightchild.parent = None
