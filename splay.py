@@ -79,7 +79,7 @@ class SplayForest():
         node = self.roots[treename]
         if node != None:
             parent = None
-            while node != key and node != None:
+            while node != None and node.key != key:
                 parent = node
                 if key < node.key:
                     node = node.leftchild
@@ -106,7 +106,7 @@ class SplayForest():
     # The key is guaranteed to not be in the tree.
     # Call splay(x) and respond according to whether we get the IOP or IOS.
     def insert(self,treename:str,key:int):
-        # self.dump()
+        # print(key)
         self.search(treename, key)
         node = self.roots[treename]
         if node == None:
@@ -123,6 +123,7 @@ class SplayForest():
                 node.leftchild.parent = node.parent
             node.leftchild = None
             self.roots[treename] = node.parent
+        # self.dump()
 
     # Delete Type 1:
     # The key is guarenteed to be in the tree.
