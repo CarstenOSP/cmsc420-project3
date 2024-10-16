@@ -75,8 +75,7 @@ class SplayForest():
     # Search:
     # Search for the key or the last node before we fall out of the tree.
     # Splay that node.
-    def search(self,treename: str,key:int):
-        node = self.roots[treename]
+    def splay(self, treename: str, node: Node, key: int):
         if node != None:
             parent = None
             while node != None and node.key != key:
@@ -101,6 +100,10 @@ class SplayForest():
             if node.parent != None:
                 # print("Zig")
                 self.zig(treename, node)
+
+    def search(self,treename: str,key:int):
+        node = self.roots[treename]
+        self.splay(treename, node, key)
 
     # Insert Type 1:
     # The key is guaranteed to not be in the tree.
@@ -130,4 +133,16 @@ class SplayForest():
     # Call splay(key) and then respond accordingly.
     # If key (now at the root) has two subtrees call splay(key) on the right one.
     def delete(self,treename:str,key:int):
-        print('This is a place-holder')
+        self.search(treename, key)
+        node = self.roots[treename]
+        if node.leftchild and node.rightchild:
+            self.splay(treename, node.rightchild, key)
+        else:
+            if not node.leftchild and not node.rightchild:
+                self.roots[treename] = None
+            elif node.leftchild:
+                self.roots[treename] = node.leftchild
+                node.leftchild.parent = None
+            else:
+                self.roots[treename] = node.leftchild
+                node.rightchild.parent = None
