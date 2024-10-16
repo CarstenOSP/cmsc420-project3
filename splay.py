@@ -47,56 +47,82 @@ class SplayForest():
                     dict_repr[t] = _to_dict(self.roots[t])
         print(json.dumps(dict_repr,indent = 2))
 
-    def zig(self, node: Node):
-        parent = node.parent
+    def zig(self, treename: str, node: Node):
         if node == None:
             print("Oopsy! This shouldn't happen")
-        if node == parent.left:
+        parent = node.parent
+        if node == parent.leftchild:
+            if node.rightchild:
+                node.rightchild.parent = parent
             parent.leftchild = node.rightchild
+            node.rightchild = parent
         else:
+            if node.leftchild:
+                node.leftchild.parent = parent
             parent.rightchild = node.leftchild
+            node.leftchild = parent
+        if parent.parent:
+            if parent == parent.parent.leftchild:
+                parent.parent.leftchild = node
+            else:
+                parent.parent.rightchild = node
+        else:
+            self.roots[treename] = node
         node.parent = parent.parent
         parent.parent = node
+        # self.dump()
 
     # Search:
     # Search for the key or the last node before we fall out of the tree.
     # Splay that node.
     def search(self,treename: str,key:int):
         node = self.roots[treename]
-        parent = None
-        while node != key and node != None:
-            parent = node
-            if key > node:
-                node = node.leftchild
-            else:
-                node = node.rightchild
-        if node == None:
-            node = parent
-        while node.parent != None and node.parent.parent != None: # while Node is not at root or child
-            if (node == node.parent.left and node.parent == node.parent.parent.left) or \
-               (node == node.parent.right and node.parent == node.parent.parent.right):
-                self.zig(node.parent)
-                self.zig(node)
-            else:
-                self.zig(node)
-                self.zig(node)
-        if node.parent != None:
-            self.zig(node)
-        self.roots[treename] = node
+        if node != None:
+            parent = None
+            while node != key and node != None:
+                parent = node
+                if key < node.key:
+                    node = node.leftchild
+                else:
+                    node = node.rightchild
+            if node == None:
+                node = parent
+            # print(node.key)
+            while node.parent != None and node.parent.parent != None: # while Node is not at root or child
+                if (node == node.parent.leftchild and node.parent == node.parent.parent.leftchild) or \
+                    (node == node.parent.rightchild and node.parent == node.parent.parent.rightchild):
+                    # print("Zig zig")
+                    self.zig(treename, node.parent)
+                    self.zig(treename, node)
+                else:
+                    # print("Zig zag")
+                    self.zig(treename, node)
+                    self.zig(treename, node)
+            if node.parent != None:
+                # print("Zig")
+                self.zig(treename, node)
 
     # Insert Type 1:
     # The key is guaranteed to not be in the tree.
     # Call splay(x) and respond according to whether we get the IOP or IOS.
     def insert(self,treename:str,key:int):
+        # self.dump()
         self.search(treename, key)
         node = self.roots[treename]
-        if node < key:
+        if node == None:
+            self.roots[treename] = Node(key, None, None, None)
+        elif node.key < key:
             node.parent = Node(key, node, node.rightchild, None)
+            if node.rightchild:
+                node.rightchild.parent = node.parent
             node.rightchild = None
+            self.roots[treename] = node.parent
         else:
             node.parent = Node(key, node.leftchild, node, None)
+            if node.leftchild:
+                node.leftchild.parent = node.parent
             node.leftchild = None
-        self.roots[treename] = node.parent
+            self.roots[treename] = node.parent
 
     # Delete Type 1:
     # The key is guarenteed to be in the tree.
